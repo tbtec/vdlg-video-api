@@ -34,10 +34,10 @@ func (ctl *UploadRestController) Handle(ctx context.Context, request httpserver.
 	}
 	slog.InfoContext(ctx, "Parsed video request", slog.Any("videoRequest", videoRequest))
 
-	url, err2 := ctl.controller.Execute(ctx, videoRequest)
+	response, err2 := ctl.controller.Execute(ctx, videoRequest)
 	if err2 != nil {
 		return httpserver.HandleError(ctx, err2)
 	}
 
-	return httpserver.Ok(url)
+	return httpserver.Ok(response)
 }

@@ -11,7 +11,6 @@ import (
 
 	"github.com/tbtec/tremligeiro/internal/env"
 	"github.com/tbtec/tremligeiro/internal/infra/container"
-	"github.com/tbtec/tremligeiro/internal/infra/event/eventserver"
 	"github.com/tbtec/tremligeiro/internal/infra/httpserver/server"
 )
 
@@ -43,14 +42,14 @@ func run(ctx context.Context) error {
 	}
 
 	httpServer := server.New(container, config)
-	eventServer := eventserver.NewEventServer(container, config)
+	// eventServer := eventserver.NewEventServer(container, config)
 
-	slog.InfoContext(ctx, "Starting Event Server...")
-	go func(ctx context.Context) {
-		for {
-			eventServer.Consume(ctx)
-		}
-	}(ctx)
+	// slog.InfoContext(ctx, "Starting Event Server...")
+	// go func(ctx context.Context) {
+	// 	for {
+	// 		eventServer.Consume(ctx)
+	// 	}
+	// }(ctx)
 
 	httpServer.Listen()
 

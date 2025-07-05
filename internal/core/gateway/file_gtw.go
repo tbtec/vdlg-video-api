@@ -7,16 +7,29 @@ import (
 )
 
 type FileGateway struct {
-	fileService file.IFileUploadService
+	fileService file.IFileService
 }
 
-func NewUploadGateway(fileService file.IFileUploadService) *FileGateway {
+func NewFileGateway(fileService file.IFileService) *FileGateway {
 	return &FileGateway{
 		fileService: fileService,
 	}
 }
 
-func (gtw *FileGateway) GenerateUploadUrl(ctx context.Context, customerId string, fileName string) (string, error) {
+func (gtw *FileGateway) GenerateUploadUrl(ctx context.Context, fileName string) (string, error) {
+	url, err := gtw.fileService.GenerateUploadUrl(ctx, fileName)
+	if err != nil {
+		return "", err
+	}
 
-	return gtw.fileService.GenerateUploadUrl(ctx, customerId, fileName)
+	return url, nil
+}
+
+func (gtw *FileGateway) GenerateDownloadUrl(ctx context.Context, fileName string) (string, error) {
+	url, err := gtw.fileService.GenerateDownloadUrl(ctx, fileName)
+	if err != nil {
+		return "", err
+	}
+
+	return url, nil
 }

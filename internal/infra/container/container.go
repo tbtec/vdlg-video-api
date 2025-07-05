@@ -12,25 +12,16 @@ import (
 	rdbms "github.com/tbtec/tremligeiro/internal/infra/database"
 	"github.com/tbtec/tremligeiro/internal/infra/database/postgres"
 	"github.com/tbtec/tremligeiro/internal/infra/database/repository"
-	"github.com/tbtec/tremligeiro/internal/infra/event"
-	"github.com/tbtec/tremligeiro/internal/infra/external"
 	"github.com/tbtec/tremligeiro/internal/infra/file"
 )
 
 type Container struct {
-	Config                 env.Config
-	TremLigeiroDB          rdbms.RDBMS
-	ProductRepository      repository.IProductRepository
-	OrderRepository        repository.IOrderRepository
-	OrderProductRepository repository.IOrderProductRepository
-	CustomerRepository     repository.ICustomerRepository
-	PaymentRepository      repository.IPaymentRepository
-	PaymentService         external.IPaymentService
-	CustomerService        external.ICustomerService
-	ProductService         external.IProductService
-	ProducerService        event.IProducerService
-	ConsumerService        event.IConsumerService
-	FileUploadService      file.IFileUploadService
+	Config        env.Config
+	TremLigeiroDB rdbms.RDBMS
+	// ProducerService        event.IProducerService
+	// ConsumerService        event.IConsumerService
+	VideoRepository   repository.IVideoRepository
+	FileUploadService file.IFileService
 }
 
 func New(config env.Config) (*Container, error) {
@@ -50,6 +41,7 @@ func (container *Container) Start(ctx context.Context) error {
 	} else {
 		awsConfig, err = config.LoadDefaultConfig(ctx,
 			config.WithRegion(container.Config.AwsRegion))
+		log.Printf("AWS Region: %s", container.Config.AwsRegion)
 		if err != nil {
 			log.Fatalf("erro ao carregar config: %v", err)
 		}
@@ -65,17 +57,10 @@ func (container *Container) Start(ctx context.Context) error {
 		return err
 	}
 
-	container.ProductRepository = repository.NewProductRepository(container.TremLigeiroDB)
-	container.OrderRepository = repository.NewOrderRepository(container.TremLigeiroDB)
-	container.CustomerRepository = repository.NewCustomerRepository(container.TremLigeiroDB)
-	container.OrderProductRepository = repository.NewOrderProductRepository(container.TremLigeiroDB)
-	container.PaymentRepository = repository.NewPaymentRepository(container.TremLigeiroDB)
-	container.PaymentService = external.NewPaymentService(getPaymentConf(container.Config))
-	container.CustomerService = external.NewCustomerService(getCustomerConf(container.Config))
-	container.ProductService = external.NewProductService(getProductConf(container.Config))
-	container.ProducerService = event.NewProducerService(container.Config.OrderTopicArn, awsConfig)
-	container.ConsumerService = event.NewConsumerService(container.Config.ProductionOrderQueueUrl, awsConfig)
-	container.FileUploadService = file.NewFileUploadService(container.Config.S3BucketName, awsConfig)
+	// container.ProducerService = event.NewProducerService(container.Config.OrderTopicArn, awsConfig)
+	// container.ConsumerService = event.NewConsumerService(container.Config.ProductionOrderQueueUrl, awsConfig)
+	container.VideoRepository = repository.NewVideoRepository(container.TremLigeiroDB)
+	container.FileUploadService = file.NewFileService(container.Config.S3BucketName, awsConfig)
 
 	return nil
 }
@@ -96,25 +81,6 @@ func getPostgreSQLConf(config env.Config) postgres.PostgreSQLConf {
 		Url:    config.DbHost,
 		Port:   config.DbPort,
 		DbName: config.DbName,
-	}
-}
-
-func getPaymentConf(config env.Config) external.PaymentConfig {
-	return external.PaymentConfig{
-		Url:   config.PaymentUrl,
-		Token: config.PaymentAuthToken,
-	}
-}
-
-func getCustomerConf(config env.Config) external.CustomerConfig {
-	return external.CustomerConfig{
-		Url: config.CustomerUrl,
-	}
-}
-
-func getProductConf(config env.Config) external.ProductConfig {
-	return external.ProductConfig{
-		Url: config.ProductUrl,
 	}
 }
 

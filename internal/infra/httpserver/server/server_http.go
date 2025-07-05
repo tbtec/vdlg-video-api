@@ -38,7 +38,9 @@ func New(container *container.Container, config env.Config) *HTTPServer {
 
 	baseRouter := app.Group("/api/v1")
 
-	baseRouter.Post("/upload", adaptRoute(controller.NewUploadRestController(container)))
+	baseRouter.Post("/video", adaptRoute(controller.NewUploadRestController(container)))
+	baseRouter.Get("/video", adaptRoute(controller.NewVideoFindController(container)))
+	baseRouter.Get("/video/:id", adaptRoute(controller.NewVideoFindOneRestController(container)))
 
 	app.Use(middleware.NewNotFound())
 
