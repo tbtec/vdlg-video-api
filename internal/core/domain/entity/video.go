@@ -21,15 +21,17 @@ type Video struct {
 type VideoStatus string
 
 const (
-	VideoStatusPending   VideoStatus = "PENDING"
-	VideoStatusCompleted VideoStatus = "COMPLETED"
+	VideoStatusReceived   VideoStatus = "RECEIVED"
+	VideoStatusProcessing VideoStatus = "PROCESSING"
+	VideoStatusCompleted  VideoStatus = "COMPLETED"
+	VideoStatusError      VideoStatus = "ERROR"
 )
 
 func NewVideo(customerId string) Video {
 	return Video{
 		ID:             ulid.NewUlid().String(),
 		CustomerId:     customerId,
-		Status:         VideoStatusPending,
+		Status:         VideoStatusReceived,
 		FileNameInput:  "",
 		FileNameOutput: "",
 		CreatedAt:      time.Now().UTC(),

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/tbtec/tremligeiro/internal/infra/database"
 	"github.com/tbtec/tremligeiro/internal/infra/database/model"
@@ -59,6 +60,8 @@ func (repository *VideoRepository) FindOne(ctx context.Context, id string) (*mod
 }
 
 func (repository *VideoRepository) Update(ctx context.Context, video *model.Video) error {
+
+	slog.InfoContext(ctx, "Updating video", slog.Any("video", video))
 
 	result := repository.database.DB.WithContext(ctx).Save(&video)
 

@@ -1,5 +1,16 @@
 package event
 
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"log/slog"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/tbtec/tremligeiro/internal/dto"
+)
+
 type SNSEnvelope struct {
 	Type      string `json:"Type"`
 	MessageId string `json:"MessageId"`
@@ -7,72 +18,129 @@ type SNSEnvelope struct {
 	Message   string `json:"Message"`
 }
 
-// type IConsumerService interface {
-// 	ConsumeMessage(ctx context.Context) (*dto.Order, error)
-// }
+type S3Event struct {
+	Records []struct {
+		S3 struct {
+			Object struct {
+				Key string `json:"key"`
+			} `json:"object"`
+		} `json:"s3"`
+	} `json:"Records"`
+}
 
-// type ConsumerService struct {
-// 	QueueUrl string
-// 	QueueArn string
-// 	Client   *sqs.Client
-// }
+type IConsumerService interface {
+	ConsumeMessageInput(ctx context.Context) (*dto.InputMessage, error)
+	ConsumeMessageOutput(ctx context.Context) (*dto.InputMessage, error)
+}
 
-// func NewConsumerService(QueueUrl string, config aws.Config) IConsumerService {
-// 	return &ConsumerService{
-// 		QueueUrl: QueueUrl,
-// 		Client:   sqs.NewFromConfig(config),
-// 	}
-// }
+type ConsumerService struct {
+	QueueInputUrl  string
+	QueueOutputUrl string
+	Client         *sqs.Client
+}
 
-// func (consumer *ConsumerService) ConsumeMessage(ctx context.Context) (*dto.Order, error) {
-// 	// Receive a message from the queue
-// 	resp, err := consumer.Client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
-// 		QueueUrl:            &consumer.QueueUrl,
-// 		MaxNumberOfMessages: 1,
-// 	})
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func NewConsumerService(queueInputUrl string, queueOutputUrl string, config aws.Config) IConsumerService {
+	return &ConsumerService{
+		QueueInputUrl:  queueInputUrl,
+		QueueOutputUrl: queueOutputUrl,
+		Client:         sqs.NewFromConfig(config),
+	}
+}
 
-// 	if len(resp.Messages) == 0 {
-// 		return nil, nil // No messages available
-// 	}
+func (consumer *ConsumerService) ConsumeMessageInput(ctx context.Context) (*dto.InputMessage, error) {
+	// Receive a message from the queue
+	resp, err := consumer.Client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            &consumer.QueueInputUrl,
+		MaxNumberOfMessages: 1,
+	})
+	if err != nil {
+		return nil, err
+	}
 
-// 	var envelope SNSEnvelope
-// 	err = json.Unmarshal([]byte(*resp.Messages[0].Body), &envelope)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("erro ao desserializar envelope SNS: %w", err)
-// 	}
+	if len(resp.Messages) == 0 {
+		return nil, nil // No messages available
+	}
 
-// 	var order dto.Order
-// 	err = json.Unmarshal([]byte(envelope.Message), &order)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("erro ao desserializar Order: %w", err)
-// 	}
-// 	slog.InfoContext(ctx, "Received message", "MessageId", *resp.Messages[0].MessageId)
-// 	slog.InfoContext(ctx, "Received message", "body", order)
+	var envelope SNSEnvelope
+	err = json.Unmarshal([]byte(*resp.Messages[0].Body), &envelope)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao desserializar envelope SNS: %w", err)
+	}
 
-// 	// Delete the message from the queue
-// 	out, delErr := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
-// 		QueueUrl:      &consumer.QueueUrl,
-// 		ReceiptHandle: resp.Messages[0].ReceiptHandle,
-// 	})
-// 	if delErr != nil {
-// 		slog.ErrorContext(ctx, "Error deleting message", "error", delErr)
-// 	}
-// 	slog.InfoContext(ctx, "Message deleted", "recepit", *&out.ResultMetadata)
+	slog.InfoContext(ctx, "Received message", "MessageId", envelope.Message)
 
-// 	return &order, nil
-// }
+	var event S3Event
+	err = json.Unmarshal([]byte(envelope.Message), &event)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao desserializar Order: %w", err)
+	}
+	slog.InfoContext(ctx, "Received message", "MessageId", *resp.Messages[0].MessageId)
+	slog.InfoContext(ctx, "Received message", "body", event)
 
-// func (consumer *ConsumerService) DeleteMessage(ctx context.Context, receiptHandle string) error {
-// 	_, err := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
-// 		QueueUrl:      &consumer.QueueUrl,
-// 		ReceiptHandle: &receiptHandle,
-// 	})
-// 	if err != nil {
-// 		return err
-// 	}
+	// Delete the message from the queue
+	out, delErr := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      &consumer.QueueInputUrl,
+		ReceiptHandle: resp.Messages[0].ReceiptHandle,
+	})
+	if delErr != nil {
+		slog.ErrorContext(ctx, "Error deleting message", "error", delErr)
+	}
+	slog.InfoContext(ctx, "Message deleted", "recepit", *&out.ResultMetadata)
 
-// 	return nil
-// }
+	return &dto.InputMessage{
+		Key: event.Records[0].S3.Object.Key,
+	}, nil
+}
+
+func (consumer *ConsumerService) ConsumeMessageOutput(ctx context.Context) (*dto.InputMessage, error) {
+	// Receive a message from the queue
+	resp, err := consumer.Client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+		QueueUrl:            &consumer.QueueOutputUrl,
+		MaxNumberOfMessages: 1,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.Messages) == 0 {
+		return nil, nil // No messages available
+	}
+
+	var envelope SNSEnvelope
+	err = json.Unmarshal([]byte(*resp.Messages[0].Body), &envelope)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao desserializar envelope SNS: %w", err)
+	}
+
+	var order dto.InputMessage
+	err = json.Unmarshal([]byte(envelope.Message), &order)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao desserializar Order: %w", err)
+	}
+	slog.InfoContext(ctx, "Received message", "MessageId", *resp.Messages[0].MessageId)
+	slog.InfoContext(ctx, "Received message", "body", order)
+
+	// Delete the message from the queue
+	out, delErr := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      &consumer.QueueOutputUrl,
+		ReceiptHandle: resp.Messages[0].ReceiptHandle,
+	})
+	if delErr != nil {
+		slog.ErrorContext(ctx, "Error deleting message", "error", delErr)
+	}
+	slog.InfoContext(ctx, "Message deleted", "recepit", *&out.ResultMetadata)
+
+	return &order, nil
+}
+
+func (consumer *ConsumerService) DeleteMessage(ctx context.Context, receiptHandle string) error {
+	_, err := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
+		QueueUrl:      &consumer.QueueInputUrl,
+		ReceiptHandle: &receiptHandle,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -12,14 +12,14 @@ import (
 	rdbms "github.com/tbtec/tremligeiro/internal/infra/database"
 	"github.com/tbtec/tremligeiro/internal/infra/database/postgres"
 	"github.com/tbtec/tremligeiro/internal/infra/database/repository"
+	"github.com/tbtec/tremligeiro/internal/infra/event"
 	"github.com/tbtec/tremligeiro/internal/infra/file"
 )
 
 type Container struct {
-	Config        env.Config
-	TremLigeiroDB rdbms.RDBMS
-	// ProducerService        event.IProducerService
-	// ConsumerService        event.IConsumerService
+	Config            env.Config
+	TremLigeiroDB     rdbms.RDBMS
+	ConsumerService   event.IConsumerService
 	VideoRepository   repository.IVideoRepository
 	FileUploadService file.IFileService
 }
@@ -57,8 +57,7 @@ func (container *Container) Start(ctx context.Context) error {
 		return err
 	}
 
-	// container.ProducerService = event.NewProducerService(container.Config.OrderTopicArn, awsConfig)
-	// container.ConsumerService = event.NewConsumerService(container.Config.ProductionOrderQueueUrl, awsConfig)
+	container.ConsumerService = event.NewConsumerService(container.Config.InputQueueUrl, container.Config.OutputQueueUrl, awsConfig)
 	container.VideoRepository = repository.NewVideoRepository(container.TremLigeiroDB)
 	container.FileUploadService = file.NewFileService(container.Config.S3BucketName, awsConfig)
 

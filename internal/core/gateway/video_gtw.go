@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/tbtec/tremligeiro/internal/core/domain/entity"
 	"github.com/tbtec/tremligeiro/internal/infra/database/model"
@@ -54,6 +55,7 @@ func (gtw *VideoGateway) Update(ctx context.Context, video *entity.Video) error 
 	err := gtw.videoRepository.Update(ctx, &videoModel)
 
 	if err != nil {
+		slog.ErrorContext(ctx, "Error updating video", slog.Any("error", err), slog.Any("video", videoModel))
 		return err
 	}
 

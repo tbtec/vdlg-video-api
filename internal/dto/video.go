@@ -7,6 +7,9 @@ type CreateVideo struct {
 	FileName   string `json:"fileName" validate:"required"`
 }
 
+type UpdateVideo struct {
+	InputMessage *InputMessage
+}
 type Video struct {
 	ID             string    `json:"id"`
 	CustomerId     string    `json:"customerId"`
