@@ -30,13 +30,14 @@ func (uc *VideoUpdateUseCase) Execute(ctx context.Context, updateVideo dto.Updat
 		slog.InfoContext(ctx, "Updating video status", slog.Any("videoId", videoId))
 
 		video, err := uc.videoGtw.FindOne(ctx, videoId)
-		slog.InfoContext(ctx, "Video found", slog.Any("video", video))
+		if video != nil {
+			slog.InfoContext(ctx, "Video found", slog.Any("video", video))
 
-		video.SetStatus(entity.VideoStatusProcessing)
-		slog.InfoContext(ctx, "Setting video status to Processing", slog.Any("videoId", video.ID))
+			video.SetStatus(entity.VideoStatusProcessing)
+			slog.InfoContext(ctx, "Setting video status to Processing", slog.Any("videoId", video.ID))
 
-		uc.videoGtw.Update(ctx, video)
-
+			uc.videoGtw.Update(ctx, video)
+		}
 		if err != nil {
 			slog.ErrorContext(ctx, "Error file", slog.Any("error", err))
 		}
@@ -46,17 +47,18 @@ func (uc *VideoUpdateUseCase) Execute(ctx context.Context, updateVideo dto.Updat
 		slog.InfoContext(ctx, "Updating video status", slog.Any("videoId", videoId))
 
 		video, err := uc.videoGtw.FindOne(ctx, videoId)
-		slog.InfoContext(ctx, "Video found", slog.Any("video", video))
+		if video != nil {
+			slog.InfoContext(ctx, "Video found", slog.Any("video", video))
 
-		if updateVideo.OutputMessage.Status == string(entity.VideoStatusCompleted) {
-			video.SetStatus(entity.VideoStatusCompleted)
-		} else {
-			video.SetStatus(entity.VideoStatusError)
+			if updateVideo.OutputMessage.Status == string(entity.VideoStatusCompleted) {
+				video.SetStatus(entity.VideoStatusCompleted)
+			} else {
+				video.SetStatus(entity.VideoStatusError)
+			}
+
+			slog.InfoContext(ctx, "Setting video status to Processing", slog.Any("videoId", video.ID))
+			uc.videoGtw.Update(ctx, video)
 		}
-
-		slog.InfoContext(ctx, "Setting video status to Processing", slog.Any("videoId", video.ID))
-		uc.videoGtw.Update(ctx, video)
-
 		if err != nil {
 			slog.ErrorContext(ctx, "Error file", slog.Any("error", err))
 		}

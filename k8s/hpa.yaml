@@ -1,16 +1,16 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: tremligeiro-order
-  namespace: tremligeiro
+  name: vdlg-video
+  namespace: vdlg
   labels:
-    app: tremligeiro-order
+    app: vdlg-video
     environment: "dev"
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: tremligeiro-order
+    name: vdlg-video
   minReplicas: 1
   maxReplicas: 6
   metrics:

@@ -1,18 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: tremligeiro-order-config
-  namespace: tremligeiro
+  name: vdlg-video-config
+  namespace: vdlg
 data:
   ENV: "dev"
   PORT: "8080"
-  POSTGRES_DB: "tremligeiro_order_db"
+  POSTGRES_DB: "vdlg_db"
   POSTGRES_PORT: "5432"
-  POSTGRES_USER: "admintremligeiro"
-  POSTGRES_HOST: "tremligeiro-postgres-db-order.cdnilrkxgmpa.us-east-1.rds.amazonaws.com"
-  CUSTOMER_URL: "http://tremligeiro-customer.tremligeiro.svc.cluster.local:8080"
-  PRODUCT_URL: "http://tremligeiro-product.tremligeiro.svc.cluster.local:8080"
-  PAYMENT_URL: "http://tremligeiro-payment.tremligeiro.svc.cluster.local:8080"
-  ORDER_TOPIC_ARN: "arn:aws:sns:us-east-1:000047597454:OrderTopic"
-  PRODUCTION_ORDER_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/000047597454/ProductionQueueAppOrder" 
+  POSTGRES_USER: "adminvdlg"
+  POSTGRES_HOST: "vdlg-postgres-db.cdnilrkxgmpa.us-east-1.rds.amazonaws.com"
+  INPUT_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/000047597454/ApiInputQueue" 
+  OUTPUT_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/000047597454/ApiOutputQueue"
   AWS_REGION: "us-east-1"

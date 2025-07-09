@@ -37,7 +37,7 @@ func (eventServer *EventServer) ConsumeInput(ctx context.Context) {
 	if message == nil {
 		// slog.InfoContext(ctx, "No messages available")
 	} else {
-		slog.InfoContext(ctx, "Received message: ", &message)
+		slog.InfoContext(ctx, "Received message", slog.Any("message", message))
 
 		err2 := eventServer.VideoUpdateController.Execute(ctx, dto.UpdateVideo{
 			InputMessage: message,

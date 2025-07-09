@@ -85,7 +85,7 @@ func (consumer *ConsumerService) ConsumeMessageInput(ctx context.Context) (*dto.
 	if delErr != nil {
 		slog.ErrorContext(ctx, "Error deleting message", "error", delErr)
 	}
-	slog.InfoContext(ctx, "Message deleted", "recepit", *&out.ResultMetadata)
+	slog.InfoContext(ctx, "Message deleted", "recepit", out.ResultMetadata)
 
 	return &dto.InputMessage{
 		Key: event.Records[0].S3.Object.Key,
