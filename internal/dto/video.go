@@ -8,7 +8,8 @@ type CreateVideo struct {
 }
 
 type UpdateVideo struct {
-	InputMessage *InputMessage
+	InputMessage  *InputMessage
+	OutputMessage *OutputMessage
 }
 type Video struct {
 	ID             string    `json:"id"`

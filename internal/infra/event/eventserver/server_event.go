@@ -30,17 +30,38 @@ func NewEventServer(container *container.Container, config env.Config) *EventSer
 
 func (eventServer *EventServer) ConsumeInput(ctx context.Context) {
 
-	inputMessage, err := eventServer.ConsumerService.ConsumeMessageInput(ctx)
+	message, err := eventServer.ConsumerService.ConsumeMessageInput(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "Error reading message", slog.Any("error", err))
 	}
-	if inputMessage == nil {
+	if message == nil {
 		// slog.InfoContext(ctx, "No messages available")
 	} else {
-		slog.InfoContext(ctx, "Received message: ", &inputMessage)
+		slog.InfoContext(ctx, "Received message: ", &message)
 
 		err2 := eventServer.VideoUpdateController.Execute(ctx, dto.UpdateVideo{
-			InputMessage: inputMessage,
+			InputMessage: message,
+		})
+		if err2 != nil {
+			slog.ErrorContext(ctx, "Error processing message", slog.Any("error", err2))
+
+		}
+	}
+}
+
+func (eventServer *EventServer) ConsumeOutput(ctx context.Context) {
+
+	message, err := eventServer.ConsumerService.ConsumeMessageOutput(ctx)
+	if err != nil {
+		slog.ErrorContext(ctx, "Error reading message", slog.Any("error", err))
+	}
+	if message == nil {
+		// slog.InfoContext(ctx, "No messages available")
+	} else {
+		slog.InfoContext(ctx, "Received message: ", &message)
+
+		err2 := eventServer.VideoUpdateController.Execute(ctx, dto.UpdateVideo{
+			OutputMessage: message,
 		})
 		if err2 != nil {
 			slog.ErrorContext(ctx, "Error processing message", slog.Any("error", err2))

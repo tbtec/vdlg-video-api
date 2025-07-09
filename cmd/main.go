@@ -45,10 +45,17 @@ func run(ctx context.Context) error {
 	httpServer := server.New(container, config)
 	eventServer := eventserver.NewEventServer(container, config)
 
-	slog.InfoContext(ctx, "Starting Event Server...")
+	slog.InfoContext(ctx, "Starting Event Server [InputMessages]...")
 	go func(ctx context.Context) {
 		for {
 			eventServer.ConsumeInput(ctx)
+		}
+	}(ctx)
+
+	slog.InfoContext(ctx, "Starting Event Server [OutputMessages]...")
+	go func(ctx context.Context) {
+		for {
+			eventServer.ConsumeOutput(ctx)
 		}
 	}(ctx)
 

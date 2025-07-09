@@ -27,7 +27,7 @@ func (uc *UploadUseCase) Execute(ctx context.Context, createVideo dto.CreateVide
 
 	video := entity.NewVideo(createVideo.CustomerId)
 
-	fileName := uc.formatFileNameUpload(video.ID, createVideo.FileName)
+	fileName := uc.formatFileNameUpload(video.ID, video.CustomerId, createVideo.FileName)
 
 	url, err := uc.fileGtw.GenerateUploadUrl(ctx, fileName)
 
@@ -43,12 +43,9 @@ func (uc *UploadUseCase) Execute(ctx context.Context, createVideo dto.CreateVide
 	return video, nil
 }
 
-func (uc *UploadUseCase) formatFileNameUpload(id string, fileName string) string {
-	// parts := strings.Split(fileName, ".")
-	// formatted := time.Now().Format("20060102_150405")
-	// return id + "_" + formatted + "_" + parts[0] + "." + parts[1]
+func (uc *UploadUseCase) formatFileNameUpload(id string, customerId string, fileName string) string {
 	parts := strings.Split(fileName, ".")
-	return id + "." + parts[1]
+	return id + "_" + customerId + "." + parts[1]
 }
 
 func (uc *UploadUseCase) formatFileNameDownload(fileName string) string {

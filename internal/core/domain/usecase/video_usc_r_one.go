@@ -34,11 +34,13 @@ func (usc *VideoFindOneUseCase) Execute(ctx context.Context, id string) (*entity
 		return nil, err
 	}
 
-	url, err2 := usc.fileGtw.GenerateDownloadUrl(ctx, video.FileNameOutput)
-	if err2 != nil {
-		return nil, err2
+	if video.Status == entity.VideoStatusCompleted {
+		url, err2 := usc.fileGtw.GenerateDownloadUrl(ctx, video.FileNameOutput)
+		if err2 != nil {
+			return nil, err2
+		}
+		video.SetDownloadUrl(url)
 	}
-	video.SetDownloadUrl(url)
 
 	return video, nil
 }

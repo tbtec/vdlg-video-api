@@ -30,7 +30,7 @@ type S3Event struct {
 
 type IConsumerService interface {
 	ConsumeMessageInput(ctx context.Context) (*dto.InputMessage, error)
-	ConsumeMessageOutput(ctx context.Context) (*dto.InputMessage, error)
+	ConsumeMessageOutput(ctx context.Context) (*dto.OutputMessage, error)
 }
 
 type ConsumerService struct {
@@ -92,7 +92,7 @@ func (consumer *ConsumerService) ConsumeMessageInput(ctx context.Context) (*dto.
 	}, nil
 }
 
-func (consumer *ConsumerService) ConsumeMessageOutput(ctx context.Context) (*dto.InputMessage, error) {
+func (consumer *ConsumerService) ConsumeMessageOutput(ctx context.Context) (*dto.OutputMessage, error) {
 	// Receive a message from the queue
 	resp, err := consumer.Client.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
 		QueueUrl:            &consumer.QueueOutputUrl,
@@ -112,13 +112,13 @@ func (consumer *ConsumerService) ConsumeMessageOutput(ctx context.Context) (*dto
 		return nil, fmt.Errorf("erro ao desserializar envelope SNS: %w", err)
 	}
 
-	var order dto.InputMessage
-	err = json.Unmarshal([]byte(envelope.Message), &order)
+	var message dto.OutputMessage
+	err = json.Unmarshal([]byte(envelope.Message), &message)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao desserializar Order: %w", err)
 	}
-	slog.InfoContext(ctx, "Received message", "MessageId", *resp.Messages[0].MessageId)
-	slog.InfoContext(ctx, "Received message", "body", order)
+	slog.InfoContext(ctx, "Received message Output", "MessageId", *resp.Messages[0].MessageId)
+	slog.InfoContext(ctx, "Received message Output", "body", message)
 
 	// Delete the message from the queue
 	out, delErr := consumer.Client.DeleteMessage(ctx, &sqs.DeleteMessageInput{
@@ -130,7 +130,7 @@ func (consumer *ConsumerService) ConsumeMessageOutput(ctx context.Context) (*dto
 	}
 	slog.InfoContext(ctx, "Message deleted", "recepit", *&out.ResultMetadata)
 
-	return &order, nil
+	return &message, nil
 }
 
 func (consumer *ConsumerService) DeleteMessage(ctx context.Context, receiptHandle string) error {
