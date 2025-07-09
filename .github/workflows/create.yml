@@ -35,11 +35,11 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t tbtec/tremligeiro-order:1.0.0 .
+          docker build -t tbtec/vdlg-video:1.0.0 .
 
       - name: Push image
         run: |
-          docker push tbtec/tremligeiro-order:1.0.0
+          docker push tbtec/vdlg-video:1.0.0
 
   deploy:
     needs: 
