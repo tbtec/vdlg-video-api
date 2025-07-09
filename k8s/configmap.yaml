@@ -13,3 +13,4 @@ data:
   INPUT_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/000047597454/ApiInputQueue" 
   OUTPUT_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/000047597454/ApiOutputQueue"
   AWS_REGION: "us-east-1"
+  S3_BUCKET_NAME: "testetremzao"
