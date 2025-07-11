@@ -17,8 +17,8 @@ func NewVideoFindUseCase(videoGtw *gateway.VideoGateway) *VideoFindUseCase {
 	}
 }
 
-func (usc *VideoFindUseCase) Execute(ctx context.Context) ([]entity.Video, error) {
-	videos, err := usc.videoGtw.Find(ctx)
+func (usc *VideoFindUseCase) Execute(ctx context.Context, customerId string) ([]entity.Video, error) {
+	videos, err := usc.videoGtw.Find(ctx, customerId)
 	if err != nil {
 		return []entity.Video{}, err
 	}

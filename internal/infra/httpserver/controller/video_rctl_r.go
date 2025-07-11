@@ -21,7 +21,9 @@ func NewVideoFindController(container *container.Container) httpserver.IControll
 
 func (ctl *VideoFindRestController) Handle(ctx context.Context, request httpserver.Request) httpserver.Response {
 
-	output, err := ctl.controller.Execute(ctx)
+	customerId := request.Query["customerId"]
+
+	output, err := ctl.controller.Execute(ctx, customerId)
 	if err != nil {
 		return httpserver.HandleError(ctx, err)
 	}

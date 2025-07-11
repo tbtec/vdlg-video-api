@@ -24,8 +24,8 @@ func NewVideoFindController(container *container.Container) *VideoFindController
 	}
 }
 
-func (ctl *VideoFindController) Execute(ctx context.Context) (dto.VideoContent, error) {
-	videos, err := ctl.usc.Execute(ctx)
+func (ctl *VideoFindController) Execute(ctx context.Context, customerId string) (dto.VideoContent, error) {
+	videos, err := ctl.usc.Execute(ctx, customerId)
 	if err != nil {
 		return dto.VideoContent{}, err
 	}

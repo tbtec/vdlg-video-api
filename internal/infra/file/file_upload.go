@@ -31,7 +31,7 @@ func (service *FileUploadService) GenerateUploadUrl(ctx context.Context, fileNam
 	slog.InfoContext(ctx, "Generating upload URL", slog.String("fileName", fileName))
 
 	key := "input/" + fileName
-	expiration := 15 * time.Minute
+	expiration := 5 * time.Hour
 
 	presignClient := s3.NewPresignClient(service.Client)
 
@@ -52,7 +52,7 @@ func (service *FileUploadService) GenerateDownloadUrl(ctx context.Context, fileN
 	slog.InfoContext(ctx, "Generating download URL", slog.String("fileName", fileName))
 
 	key := "output/" + fileName
-	expiration := 15 * time.Minute
+	expiration := 5 * time.Hour
 
 	presignClient := s3.NewPresignClient(service.Client)
 
