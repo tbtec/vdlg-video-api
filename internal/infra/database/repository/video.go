@@ -10,7 +10,7 @@ import (
 
 type IVideoRepository interface {
 	Create(ctx context.Context, order *model.Video) error
-	Find(ctx context.Context) ([]model.Video, error)
+	Find(ctx context.Context, customerId string) ([]model.Video, error)
 	FindOne(ctx context.Context, id string) (*model.Video, error)
 	Update(ctx context.Context, order *model.Video) error
 }
@@ -36,14 +36,20 @@ func (repository *VideoRepository) Create(ctx context.Context, order *model.Vide
 	return nil
 }
 
-func (repository *VideoRepository) Find(ctx context.Context) ([]model.Video, error) {
+func (repository *VideoRepository) Find(ctx context.Context, customerId string) ([]model.Video, error) {
 	videos := []model.Video{}
 
-	result := repository.database.DB.WithContext(ctx).Find(&videos)
-	if result.Error != nil {
-		return nil, result.Error
+	if customerId != "" {
+		result := repository.database.DB.WithContext(ctx).Where("customer_id = ?", customerId).Find(&videos)
+		if result.Error != nil {
+			return nil, result.Error
+		}
+	} else {
+		result := repository.database.DB.WithContext(ctx).Find(&videos)
+		if result.Error != nil {
+			return nil, result.Error
+		}
 	}
-
 	return videos, nil
 }
 

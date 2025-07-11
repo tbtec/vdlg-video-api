@@ -81,8 +81,8 @@ func (gtw *VideoGateway) FindOne(ctx context.Context, id string) (*entity.Video,
 	return &video, nil
 }
 
-func (gtw *VideoGateway) Find(ctx context.Context) ([]entity.Video, error) {
-	videosModel, err := gtw.videoRepository.Find(ctx)
+func (gtw *VideoGateway) Find(ctx context.Context, customerId string) ([]entity.Video, error) {
+	videosModel, err := gtw.videoRepository.Find(ctx, customerId)
 	if err != nil {
 		return nil, err
 	}
